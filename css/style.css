@@ -81,6 +81,10 @@ button {
   border-radius: 0;
 }
 
+.speed-span {
+  color: #D2FDE9;
+}
+
 button:focus {
   outline: none
 }
@@ -98,7 +102,9 @@ button.active {
 }
 
 button:disabled,
-button.disabled {
+button.disabled,
+button.disabled.hover,
+button:disabled:hover {
   border-color: #D2FDE9;
   color: #D2FDE9;
 }

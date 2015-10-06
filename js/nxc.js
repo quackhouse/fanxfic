@@ -24,6 +24,8 @@ stopPlay = function(){
   $('#play-button').unbind();
   $('#stop-button').unbind();
   $('#play-button').prop('disabled', false);
+  $('#playback-speed').prop('value', 1);
+  $('.speed').html(1);
   source.stop();
   playing = false;
   url = $('#url-input').val();
@@ -85,6 +87,8 @@ init_stream = function(json_data) {
         request.onload = function() {
           // HIDE SPINNER
           $('.spinner').hide();
+          $('#playback-speed').prop('value', 1);
+          $('.speed').html(1);
           var audioData = request.response;
           audioContext.decodeAudioData(audioData, function(buffer){
             myBuffer = buffer;
@@ -102,11 +106,13 @@ init_stream = function(json_data) {
         source.stop();
         $('#play-button').prop('disabled', false);
         $('#playback-speed').prop('value', 1);
+          $('.speed').html(1);
       });
       $('#playback-speed').change(function(){
         new_speed = $(this).val();
         source.playbackRate.value = parseFloat(new_speed);
         console.log(new_speed);
+        $('.speed').html(new_speed);
       });
       $('.spinner').hide();
       $('.play-pause').css({
