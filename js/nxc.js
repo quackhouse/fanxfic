@@ -3,14 +3,31 @@ client_id = "4f28b84aa5e37d60c6b6978d99a6c632";
 var AudioContext, audio, audioContext, source, analyser, dataArray, sourceBuffer;
 var analyserMethod = "getByteFrequencyDomainData";
 var streamURL;
+var playing = false;
 
 addEventListeners = function() {
   $('#load-it').click(function(){
-    url = $('#url-input').val();
-    grab_track_json(url);
-    console.log('loading');
+    $('.spinner').show();
+    if(playing) {
+      stopPlay();
+    } else {
+      url = $('#url-input').val();
+      grab_track_json(url);
+      console.log('loading');
+    }
   });
   console.log('added');
+};
+
+stopPlay = function(){
+  $('.play-pause').hide();
+  $('#play-button').unbind();
+  $('#stop-button').unbind();
+  $('#play-button').prop('disabled', false);
+  source.stop();
+  playing = false;
+  url = $('#url-input').val();
+  grab_track_json(url);
 };
 
 parse_url = function(url) {
@@ -40,56 +57,67 @@ get_url_from_json = function(json_data) {
 init_stream = function(json_data) {
   url = get_url_from_json(json_data);
   console.log(url);
-  try {
-    AudioContext = window.AudioContext || window.webkitAudioContext;
-    context = new AudioContext();
-    audio = new Audio();
-    audio.crossOrigin = "anonymous";
-    audioContext = new AudioContext();
-    // source = audioContext.createMediaElementSource(audio);
-    // source = audioContext.createBufferSource();
-    // audioContext.decodeAudioData(audio, )
-    // source.connect(sourceBuffer);
-    // sourceBuffer.connect(audioContext.destination);
-    // analyser = audioContext.createAnalyser();
-    // source.connect(analyser);
-    $('#play-button').show();
-    $('#play-button').click(function(){
-      // SHOW SPINNER
-      $('#play-button').prop('disabled', true);
-      source = audioContext.createBufferSource();
-      request = new XMLHttpRequest();
-      request.open('GET', url, true);
-      request.responseType = 'arraybuffer';
-      request.onload = function() {
-        // HIDE SPINNER
-        var audioData = request.response;
-        audioContext.decodeAudioData(audioData, function(buffer){
-          myBuffer = buffer;
-          source.buffer = myBuffer;
-          source.playbackRate.value = 1;
-          source.connect(audioContext.destination);
-        });
-      };
-      request.send();
-      source.start(0);
-      // audio.src = url;
-      // audio.play();
-    });
-    $('#pause-button').show();
-    $('#pause-button').click(function(){
-      audio.pause();
-    });
-    $('#playback-speed').change(function(){
-      new_speed = $(this).val();
-      source.playbackRate.value = parseFloat(new_speed);
-      console.log(new_speed);
-    });
-  }
-  catch(e) {
-    alert('uh oh - nxc tool isnt supported on this browser. can you try chrome?');
-  }
+  if(!playing) {
+    try {
+      console.log('trying new audio context');
+      AudioContext = window.AudioContext || window.webkitAudioContext;
+      context = new AudioContext();
+      audio = new Audio();
+      audio.crossOrigin = "anonymous";
+      audioContext = new AudioContext();
+      playing = true;
+      // source = audioContext.createMediaElementSource(audio);
+      // source = audioContext.createBufferSource();
+      // audioContext.decodeAudioData(audio, )
+      // source.connect(sourceBuffer);
+      // sourceBuffer.connect(audioContext.destination);
+      // analyser = audioContext.createAnalyser();
+      // source.connect(analyser);
+      $('#play-button').click(function(){
+        console.log('clicked play');
+        // SHOW SPINNER
+        $('.spinner').show();
+        $('#play-button').prop('disabled', true);
+        source = audioContext.createBufferSource();
+        request = new XMLHttpRequest();
+        request.open('GET', url, true);
+        request.responseType = 'arraybuffer';
+        request.onload = function() {
+          // HIDE SPINNER
+          $('.spinner').hide();
+          var audioData = request.response;
+          audioContext.decodeAudioData(audioData, function(buffer){
+            myBuffer = buffer;
+            source.buffer = myBuffer;
+            source.playbackRate.value = 1;
+            source.connect(audioContext.destination);
+          });
+        };
+        request.send();
+        source.start(0);
+        // audio.src = url;
+        // audio.play();
+      });
+      $('#pause-button').click(function(){
+        source.stop();
+        $('#play-button').prop('disabled', false);
+        $('#playback-speed').prop('value', 1);
+      });
+      $('#playback-speed').change(function(){
+        new_speed = $(this).val();
+        source.playbackRate.value = parseFloat(new_speed);
+        console.log(new_speed);
+      });
+      $('.spinner').hide();
+      $('.play-pause').css({
+        'display': 'flex'
+      });
+    }
+    catch(e) {
+      alert('uh oh - nxc tool isnt supported on this browser. can you try chrome?');
+    }
 
+  }
 };
 
 
