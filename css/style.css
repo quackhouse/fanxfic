@@ -4,7 +4,7 @@ html, body {
   text-align: center;
   line-height: 1.62;
   font-size: 20px;
-  font-family: sans-serif;
+  font-family: "t26-carbon", sans-serif;
 }
 
 body {
@@ -12,6 +12,12 @@ body {
   justify-content: center;
   align-items: center;
 }
+
+
+input, button {
+    font-family: "t26-carbon", sans-serif;
+}
+
 
 container {
   height: 50%;
@@ -48,7 +54,7 @@ input[type="text"] {
   display: block;
   margin: 0;
   width: 100%;
-  font-family: sans-serif;
+  /*font-family: sans-serif;*/
   font-size: 48px;
   appearance: none;
   box-shadow: none;
