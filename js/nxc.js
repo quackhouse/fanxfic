@@ -6,6 +6,9 @@ var analyserMethod = "getByteFrequencyDomainData";
 var streamURL;
 var playing = false;
 var dataArray;
+var array  = [];
+streamData = new Uint8Array(128);
+var sample_interval;
 
 addEventListeners = function() {
   $('#load-it').click(function(){
@@ -58,6 +61,20 @@ get_url_from_json = function(json_data) {
   return stream_url;
 };
 
+sample_audio_stream = function() {
+  analyser.getByteFrequencyData(streamData);
+  visualize();
+}
+
+visualize = function() {
+  for(var i = 0, len = streamData.length; i < len; i++) {
+    color = "rgba(" + streamData[i] + ", 255 ," + (255 / streamData[i]) + ", .8)";
+    $('body').css({
+      "background-color": color
+    });
+  }
+}
+
 init_stream = function(json_data) {
   url = get_url_from_json(json_data);
   console.log(url);
@@ -95,21 +112,28 @@ init_stream = function(json_data) {
             audioContext.decodeAudioData(audioData, function(buffer){
             myBuffer = buffer;
             analyser = audioContext.createAnalyser();
-            sourceJs = audioContext.createScriptProcessor(2048, 1, 1);
-            sourceJs.buffer = buffer;
-            sourceJs.connect(audioContext.destination);
-            analyser.smoothingTimeConstant = 0.6;
-            analyser.fftSize = 512;
-            source.connect(analyser);
-            analyser.connect(sourceJs);
-            source.buffer = myBuffer;
             source.playbackRate.value = 1;
             source.connect(audioContext.destination);
-            sourceJs.onaudioprocess = function(e) {
-              array = new Uint8Array(analyser.frequencyBinCount);
-              analyser.getByteFrequencyData(array);
-              startVisuals();
-            };
+            analyser.fftSize = 256;
+            source.connect(analyser);
+            analyser.connect(audioContext.destination);
+            sample_interval = setInterval(sample_audio_stream, 20);
+            // window.requestAnimationFrame(startVisuals);
+            sourceJs = audioContext.createScriptProcessor(2048, 1, 1);
+            sourceJs.buffer = buffer;
+            // sourceJs.connect(audioContext.destination);
+            analyser.smoothingTimeConstant = 0.6;
+            analyser.fftSize = 512;
+            // source.connect(analyser);
+            // analyser.connect(sourceJs);
+            source.buffer = myBuffer;
+
+            // sourceJs.onaudioprocess = function(e) {
+            //   array = new Uint8Array(analyser.frequencyBinCount);
+            //   analyser.getByteFrequencyData(array);
+            //   console.log('audioprocess')
+            //   // startVisuals();
+            // };
           });
 
         };
@@ -120,6 +144,7 @@ init_stream = function(json_data) {
       });
       $('#pause-button').click(function(){
         source.stop();
+        clearInterval(sample_interval);
         $('#play-button').prop('disabled', false);
         $('#playback-speed').prop('value', 1);
           $('.speed').html(1);
@@ -142,15 +167,21 @@ init_stream = function(json_data) {
   }
 };
 
-startVisuals = function() {
-
-  // use array, go thru array k
-  for(var i = 0, len = array.length; i < len; i++) {
-    console.log(array[i]);
-  }
-
-  // window.requestAnimationFrame(startVisuals);
-};
+// startVisuals = function() {
+//   console.log('startvisuals');
+//   // use array, go thru array k
+//   for(var i = 0, len = streamData.length; i < len; i++) {
+//     // console.log(array[i]);
+//     val = streamData[i] / 10 > 255 ? 255 : streamData[i] / 10
+//     color = 'rgba(' + val + '0,0,1)';
+//     console.log(color);
+//     $('body').css({
+//     'background-color': color
+//   });
+//   }
+//
+//   window.requestAnimationFrame(startVisuals);
+// };
 
 $(document).ready(function(){
   addEventListeners();
